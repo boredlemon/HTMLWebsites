@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pong</title>
+  <style>
+    #gameCanvas {
+      border: 1px solid #000;
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <script>
+    // Game configuration
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const paddleWidth = 10;
+    const paddleHeight = 80;
+    const paddleSpeed = 5;
+    const ballRadius = 5;
+    const ballSpeed = 2;
+
+    // Paddle state
+    let paddleY = (canvas.height - paddleHeight) / 2;
+
+    // Ball state
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballDX = ballSpeed;
+    let ballDY = ballSpeed;
+
+    // Event listeners
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    function keyDownHandler(event) {
+      if (event.key === "ArrowUp" && paddleY > 0) {
+        paddleY -= paddleSpeed;
+      } else if (event.key === "ArrowDown" && paddleY < canvas.height - paddleHeight) {
+        paddleY += paddleSpeed;
+      }
+    }
+
+    function keyUpHandler(event) {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        paddleY = paddleY;
+      }
+    }
+
+    function drawPaddle() {
+      ctx.beginPath();
+      ctx.rect(0, paddleY, paddleWidth, paddleHeight);
+      ctx.fillStyle = "#000";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#000";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPaddle();
+      drawBall();
+
+      // Ball movement
+      ballX += ballDX;
+      ballY += ballDY;
+
+      // Ball collision with walls
+      if (ballY + ballDY > canvas.height - ballRadius || ballY + ballDY < ballRadius) {
+        ballDY = -ballDY;
+      }
+
+      // Ball collision with paddle
+      if (ballX - ballRadius < paddleWidth && ballY > paddleY && ballY < paddleY + paddleHeight) {
+        ballDX = -ballDX;
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>

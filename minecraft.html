@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HIIIIII</title>
+  <style>
+    #gameCanvas {
+      border: 1px solid #000;
+      display: block;
+      margin: 20px auto;
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const blockSize = 32;
+    const gridWidth = canvas.width / blockSize;
+    const gridHeight = canvas.height / blockSize;
+    const blockColors = {
+      0: "#fff", // Air
+      1: "#555", // Stone
+      2: "#090", // Grass
+      3: "#060"  // Dirt
+    };
+    const world = createWorld();
+    const steve = {
+      x: 0,
+      y: 0,
+      holdingPickaxe: false
+    };
+
+    function createWorld() {
+      const world = [];
+      for (let i = 0; i < gridHeight; i++) {
+        world[i] = [];
+        for (let j = 0; j < gridWidth; j++) {
+          world[i][j] = Math.floor(Math.random() * 3) + 1; // Generate stone, grass, or dirt
+        }
+      }
+      return world;
+    }
+
+    function drawWorld() {
+      for (let i = 0; i < gridHeight; i++) {
+        for (let j = 0; j < gridWidth; j++) {
+          const blockType = world[i][j];
+          const color = blockColors[blockType];
+          ctx.fillStyle = color;
+          ctx.fillRect(j * blockSize, i * blockSize, blockSize, blockSize);
+        }
+      }
+    }
+
+    function drawSteve() {
+      const steveX = steve.x * blockSize;
+      const steveY = steve.y * blockSize;
+
+      // Draw Steve's body
+      ctx.fillStyle = "#f00";
+      ctx.fillRect(steveX, steveY, blockSize, blockSize * 2);
+
+      // Draw Steve's head
+      ctx.fillStyle = "#ff0";
+      ctx.beginPath();
+      ctx.arc(steveX + blockSize / 2, steveY - blockSize / 2, blockSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw Steve's pickaxe
+      if (steve.holdingPickaxe) {
+        // Draw pickaxe handle
+        ctx.fillStyle = "#777";
+        ctx.fillRect(steveX + blockSize / 2 - 4, steveY + blockSize * 2 - 8, 8, blockSize * 2);
+        // Draw pickaxe blade
+        ctx.fillStyle = "#aaa";
+        ctx.fillRect(steveX + blockSize / 2 - 10, steveY + blockSize * 4 - 8, 20, blockSize);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "ArrowUp" && steve.y > 0) {
+        steve.y--;
+      } else if (event.key === "ArrowDown" && steve.y < gridHeight - 1) {
+        steve.y++;
+      } else if (event.key === "ArrowLeft" && steve.x > 0) {
+        steve.x--;
+      } else if (event.key === "ArrowRight" && steve.x < gridWidth - 1) {
+        steve.x++;
+      } else if (event.key === " ") {
+        if (!steve.holdingPickaxe) {
+          steve.holdingPickaxe = true;
+          mineBlock();
+        }
+      }
+    }
+
+    function handleKeyUp(event) {
+      if (event.key === " ") {
+        steve.holdingPickaxe = false;
+      }
+    }
+
+    function mineBlock() {
+      const blockType = world[steve.y][steve.x];
+      if (blockType !== 0) {
+        world[steve.y][steve.x] = 0;
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawWorld();
+      drawSteve();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Enhanced Snake Game</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+      display: block;
+      margin: 20px auto;
+      background-color: #111;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="score">Score: 0</div>
+  <div id="highScore">High Score: 0</div>
+
+  <script>
+    // Game configuration
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const gridSize = 20;
+    const gridWidth = canvas.width / gridSize;
+    const gridHeight = canvas.height / gridSize;
+    const initialSnakeSize = 3;
+    const snakeColor = "#39ff14";
+    const fruitColor = "#ff0000";
+    const scoreElement = document.getElementById("score");
+    const highScoreElement = document.getElementById("highScore");
+
+    // Game state
+    let snake;
+    let fruit;
+    let direction;
+    let score;
+    let highScore;
+
+    // Initialize the game
+    function init() {
+      snake = [];
+      for (let i = initialSnakeSize - 1; i >= 0; i--) {
+        snake.push({ x: i, y: 0 });
+      }
+
+      fruit = getRandomPosition();
+
+      direction = "right";
+      score = 0;
+      highScore = localStorage.getItem("highScore") || 0;
+
+      document.addEventListener("keydown", changeDirection);
+    }
+
+    // Update game state
+    function update() {
+      const head = { x: snake[0].x, y: snake[0].y };
+
+      // Move the snake
+      if (direction === "right") head.x++;
+      else if (direction === "left") head.x--;
+      else if (direction === "up") head.y--;
+      else if (direction === "down") head.y++;
+
+      // Check for collisions
+      if (isCollision(head) || isOutOfBounds(head)) {
+        endGame();
+        return;
+      }
+
+      snake.unshift(head);
+
+      // Check if the snake eats the fruit
+      if (head.x === fruit.x && head.y === fruit.y) {
+        score++;
+        scoreElement.textContent = "Score: " + score;
+
+        if (score > highScore) {
+          highScore = score;
+          highScoreElement.textContent = "High Score: " + highScore;
+          localStorage.setItem("highScore", highScore);
+        }
+
+        fruit = getRandomPosition();
+      } else {
+        snake.pop();
+      }
+    }
+
+    // Check if the snake collides with itself or the walls
+    function isCollision(head) {
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Check if the snake is out of bounds
+    function isOutOfBounds(head) {
+      return (
+        head.x < 0 ||
+        head.x >= gridWidth ||
+        head.y < 0 ||
+        head.y >= gridHeight
+      );
+    }
+
+    // Generate a random position for the fruit
+    function getRandomPosition() {
+      return {
+        x: Math.floor(Math.random() * gridWidth),
+        y: Math.floor(Math.random() * gridHeight)
+      };
+    }
+
+    // Change snake direction based on keyboard input
+    function changeDirection(event) {
+      const keyPressed = event.keyCode;
+      const goingUp = direction === "up";
+      const goingDown = direction === "down";
+      const goingRight = direction === "right";
+      const goingLeft = direction === "left";
+
+      if (keyPressed === 37 && !goingRight) {
+        direction = "left";
+      } else if (keyPressed === 38 && !goingDown) {
+        direction = "up";
+      } else if (keyPressed === 39 && !goingLeft) {
+        direction = "right";
+      } else if (keyPressed === 40 && !goingUp) {
+        direction = "down";
+      }
+    }
+
+    // Draw game elements
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the snake
+      ctx.fillStyle = snakeColor;
+      for (let i = 0; i < snake.length; i++) {
+        const { x, y } = snake[i];
+        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+      }
+
+      // Draw the fruit
+      ctx.fillStyle = fruitColor;
+      ctx.fillRect(fruit.x * gridSize, fruit.y * gridSize, gridSize, gridSize);
+    }
+
+    // End the game
+    function endGame() {
+      document.removeEventListener("keydown", changeDirection);
+      alert("Game Over");
+      init();
+    }
+
+    // Start the game
+    init();
+    setInterval(() => {
+      update();
+      draw();
+    }, 1000 / 8);
+  </script>
+</body>
+</html>
